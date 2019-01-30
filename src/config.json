@@ -1,0 +1,5 @@
+{
+  "spawnDelayMax": 5000,
+  "spawnDelayMin": 1000,
+  "targetMax": 10
+}
