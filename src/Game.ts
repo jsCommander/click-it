@@ -3,18 +3,29 @@ import { Target } from "./Target";
 import config from "./config.json";
 
 export class Game {
-  private context: CanvasRenderingContext2D;
-  private targets: Target[] = [];
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private targets: { [id: number]: Target } = {};
   private mousePosition?: Position;
   private spawnTimer: number = 0;
-  //private score: number = 0;
+  private lastId: number = 0;
+  public score: number = 0;
 
-  constructor(private canvas: HTMLCanvasElement) {
-    const context = canvas.getContext("2d");
-    if (!context) {
-      throw new Error("Cant create canvas 2d context");
+  constructor(canvas: HTMLCanvasElement) {
+    if (!canvas) {
+      throw new Error("Please provide correct canvas element");
     }
-    this.context = context;
+
+    this.canvas = canvas;
+    this.canvas.width = config.canvas.width;
+    this.canvas.height = config.canvas.height;
+    this.canvas.style.background = config.canvas.background;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Can't create canvas 2d context");
+    }
+    this.ctx = ctx;
     canvas.addEventListener("click", event => {
       this.mousePosition = {
         x: event.offsetX,
@@ -22,45 +33,65 @@ export class Game {
       };
     });
   }
+
   update(deltaTime: number) {
-    this.targets = this.targets.filter(target => {
+    // update gameobjects
+    for (const key in this.targets) {
+      const target = this.targets[key];
       target.update(deltaTime);
-      console.log("TCL: Game -> update -> mousePosition", this.mousePosition);
-      if (
-        this.mousePosition &&
-        target.isPointInTargetBorder(this.mousePosition)
-      ) {
-        return false;
+
+      // Check colision
+      if (this.mousePosition) {
+        const isHit = this.ctx.isPointInPath(
+          target.path,
+          this.mousePosition.x,
+          this.mousePosition.y
+        );
+
+        if (isHit) {
+          this.score += 1;
+          delete this.targets[key];
+        }
       }
 
-      if (target.liveTime < 20000) {
-        return target;
-      } else {
-        console.log("Game: delete target");
+      if (target.isDead) {
+        this.score -= 1;
+        delete this.targets[key];
       }
-    });
+    }
 
-    this.mousePosition = undefined;
-
+    // spawn new gameobjects
     if (this.spawnTimer > config.spawnDelayMax) {
-      if (this.targetCount() < config.targetMax) {
-        const pos = this.getRandomPosition();
-        console.log("TCL: Game -> update -> pos", pos);
-        console.log(this.canvas.width);
-        this.targets.push(new Target(pos));
+      if (this.targetsCount() < config.targetMax) {
+        this.lastId += 1;
+        this.targets[this.lastId] = new Target(
+          this.lastId,
+          this.getRandomPosition(),
+          5000
+        );
         this.spawnTimer = 0;
       }
     } else {
       this.spawnTimer += deltaTime;
     }
+    // reset user input
+    this.mousePosition = undefined;
   }
+
   render(deltaTime: number) {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.targets.forEach(target => target.render(this.context, deltaTime));
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    for (const key in this.targets) {
+      const target = this.targets[key];
+      target.render(this.ctx, deltaTime);
+    }
+
+    this.ctx.strokeText(`Score: ${this.score}`, 150, 20);
   }
-  targetCount() {
-    return this.targets.length;
+
+  targetsCount(): number {
+    return Object.keys(this.targets).length;
   }
+
   getRandomPosition(): Position {
     const pos = {
       x: Math.floor(Math.random() * this.canvas.width),

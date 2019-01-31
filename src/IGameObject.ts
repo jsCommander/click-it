@@ -5,7 +5,7 @@ export interface Position {
 
 export interface IGameObject {
   id: number;
-  position: Position;
+  pos: Position;
   update(deltaTime: number): void;
   render(context: CanvasRenderingContext2D, deltaTime: number): void;
 }
