@@ -30,6 +30,7 @@ export class Target implements IGameObject {
   render(ctx: CanvasRenderingContext2D, deltaTime: number) {
     ctx.fillStyle = config.target.fillStyle;
     ctx.strokeStyle = config.target.strokeStyle;
+    ctx.lineWidth = config.target.lineWidth;
 
     ctx.fill(this.path);
     ctx.stroke(this.path);

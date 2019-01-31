@@ -2,19 +2,21 @@
   "canvas": {
     "width": 640,
     "height": 480,
-    "background": "rgb(196, 179, 179)"
+    "background": "rgba(138, 136, 136, 0.78)"
   },
-  "spawnDelayMax": 5000,
-  "spawnDelayMin": 500,
   "targetMax": 10,
-
+  "spawnDelayMax": 1000,
+  "spawnDelayMin": 500,
+  "spawnDelayStep": 100,
+  "liveTimeMin": 1000,
+  "liveTimeMax": 5000,
+  "liveTimeStep": 200,
+  "levelTime": 5000,
   "target": {
-    "strokeStyle": "black",
+    "strokeStyle": "green",
     "fillStyle": "white",
-    "borderWidth": 5,
+    "lineWidth": 5,
     "radiusMax": 30,
-    "radiusMin": 5,
-    "liveTimeMin": 1000,
-    "liveTimeMax": 5000
+    "radiusMin": 5
   }
 }

@@ -7,9 +7,14 @@ export class Game {
   private ctx: CanvasRenderingContext2D;
   private targets: { [id: number]: Target } = {};
   private mousePosition?: Position;
-  private spawnTimer: number = 0;
+  private timer: number = 0;
+  private spawnTimer: number = config.spawnDelayMax;
+  private spawnDelay: number = config.spawnDelayMax;
+  private targetLiveTime: number = config.liveTimeMax;
   private lastId: number = 0;
-  public score: number = 0;
+  private level: number = 1;
+  private hit: number = 0;
+  private miss: number = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     if (!canvas) {
@@ -35,6 +40,18 @@ export class Game {
   }
 
   update(deltaTime: number) {
+    // update timers
+    this.timer += deltaTime;
+    this.spawnTimer += deltaTime;
+    // check level time
+    if (this.timer > config.levelTime * this.level) {
+      this.level += 1;
+      const newLiveTime = this.targetLiveTime - config.liveTimeStep;
+      this.targetLiveTime = Math.max(newLiveTime, config.liveTimeMin);
+      const newSpawnDeley = this.spawnDelay - config.spawnDelayStep;
+      this.spawnDelay = Math.max(newSpawnDeley, config.spawnDelayMin);
+    }
+
     // update gameobjects
     for (const key in this.targets) {
       const target = this.targets[key];
@@ -49,30 +66,28 @@ export class Game {
         );
 
         if (isHit) {
-          this.score += 1;
+          this.hit += 1;
           delete this.targets[key];
         }
       }
 
       if (target.isDead) {
-        this.score -= 1;
+        this.miss += 1;
         delete this.targets[key];
       }
     }
 
     // spawn new gameobjects
-    if (this.spawnTimer > config.spawnDelayMax) {
-      if (this.targetsCount() < config.targetMax) {
+    if (this.targetsCount() < config.targetMax) {
+      if (this.spawnTimer > this.spawnDelay || this.targetsCount() < 1) {
         this.lastId += 1;
         this.targets[this.lastId] = new Target(
           this.lastId,
           this.getRandomPosition(),
-          5000
+          this.targetLiveTime
         );
         this.spawnTimer = 0;
       }
-    } else {
-      this.spawnTimer += deltaTime;
     }
     // reset user input
     this.mousePosition = undefined;
@@ -84,8 +99,20 @@ export class Game {
       const target = this.targets[key];
       target.render(this.ctx, deltaTime);
     }
-
-    this.ctx.strokeText(`Score: ${this.score}`, 150, 20);
+    this.ctx.lineWidth = 1;
+    this.ctx.strokeStyle = "black";
+    this.ctx.strokeText(
+      `Level: ${this.level}, Hit: ${this.hit}, Miss: ${this.miss}`,
+      20,
+      20
+    );
+    this.ctx.strokeText(
+      `TargetLiveTime: ${this.targetLiveTime}, TargetSpawnDelay: ${
+        this.spawnDelay
+      }`,
+      20,
+      40
+    );
   }
 
   targetsCount(): number {
@@ -93,11 +120,18 @@ export class Game {
   }
 
   getRandomPosition(): Position {
-    const pos = {
-      x: Math.floor(Math.random() * this.canvas.width),
-      y: Math.floor(Math.random() * this.canvas.height)
-    };
+    const radius = config.target.radiusMax;
+    const x = Math.floor(Math.random() * this.canvas.width);
+    const y = Math.floor(Math.random() * this.canvas.height);
 
-    return pos;
+    return {
+      x: this.restrictPosition(x, radius, this.canvas.width - radius),
+      y: this.restrictPosition(y, radius, this.canvas.height - radius)
+    };
+  }
+  restrictPosition(num: number, min: number, max: number): number {
+    num = Math.max(min, num);
+    num = Math.min(max, num);
+    return num;
   }
 }
