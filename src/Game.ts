@@ -4,6 +4,8 @@ import config from "./config.json";
 
 export class Game {
   private canvas: HTMLCanvasElement;
+  private textLine1: HTMLElement;
+  private textLine2: HTMLElement;
   private ctx: CanvasRenderingContext2D;
   private targets: { [id: number]: Target } = {};
   private mousePosition?: Position;
@@ -25,6 +27,8 @@ export class Game {
     this.canvas.width = config.canvas.width;
     this.canvas.height = config.canvas.height;
     this.canvas.style.background = config.canvas.background;
+    this.textLine1 = document.querySelector(".info__text.line-1");
+    this.textLine2 = document.querySelector(".info__text.line-2");
 
     const ctx = canvas.getContext("2d");
     if (!ctx) {
@@ -99,20 +103,22 @@ export class Game {
       const target = this.targets[key];
       target.render(this.ctx, deltaTime);
     }
-    this.ctx.lineWidth = 1;
-    this.ctx.strokeStyle = "black";
-    this.ctx.strokeText(
-      `Level: ${this.level}, Hit: ${this.hit}, Miss: ${this.miss}`,
-      20,
-      20
-    );
-    this.ctx.strokeText(
-      `TargetLiveTime: ${this.targetLiveTime}, TargetSpawnDelay: ${
-        this.spawnDelay
-      }`,
-      20,
-      40
-    );
+    // this.ctx.lineWidth = 1;
+    // this.ctx.strokeStyle = "white";
+    // this.ctx.strokeText(
+    //   `Level: ${this.level}, Hit: ${this.hit}, Miss: ${this.miss}`,
+    //   20,
+    //   20
+    // );
+    this.textLine1.innerHTML = "Level: <i>"+this.level+"</i>, Hit: <i>"+this.hit+"</i>, Miss: <i>"+this.miss+"</i>";
+    this.textLine2.innerHTML = "TargetLiveTime: <i>"+this.targetLiveTime+"</i>, TargetSpawnDelay: <i>"+this.spawnDelay+"</i>";
+    // this.ctx.strokeText(
+    //   `TargetLiveTime: ${this.targetLiveTime}, TargetSpawnDelay: ${
+    //     this.spawnDelay
+    //   }`,
+    //   20,
+    //   40
+    // );
   }
 
   targetsCount(): number {

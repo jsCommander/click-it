@@ -2,7 +2,7 @@
   "canvas": {
     "width": 640,
     "height": 480,
-    "background": "rgba(138, 136, 136, 0.78)"
+    "background": ""
   },
   "targetMax": 10,
   "spawnDelayMax": 1000,
@@ -13,7 +13,7 @@
   "liveTimeStep": 200,
   "levelTime": 5000,
   "target": {
-    "strokeStyle": "green",
+    "strokeStyle": "orangered",
     "fillStyle": "white",
     "lineWidth": 5,
     "radiusMax": 30,
