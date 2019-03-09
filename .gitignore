@@ -9,6 +9,3 @@
 
 # Node modules folder
 /node_modules
-
-# compiled files
-docs/bundle.js

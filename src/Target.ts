@@ -1,4 +1,4 @@
-import { IGameObject, Position } from "./IGameObject";
+import { IGameObject, IPosition } from "./IGameObject";
 import config from "./config.json";
 
 export class Target implements IGameObject {
@@ -9,7 +9,7 @@ export class Target implements IGameObject {
 
   constructor(
     public id: number,
-    public pos: Position,
+    public pos: IPosition,
     public liveTime: number
   ) {
     this.radius = config.target.radiusMax;
@@ -36,7 +36,7 @@ export class Target implements IGameObject {
     ctx.stroke(this.path);
   }
 
-  private drawPath(pos: Position, radius: number): Path2D {
+  private drawPath(pos: IPosition, radius: number): Path2D {
     const path = new Path2D();
     path.arc(pos.x, pos.y, radius, 0, 2 * Math.PI, false);
     return path;

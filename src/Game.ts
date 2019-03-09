@@ -1,14 +1,12 @@
-import { Position } from "./IGameObject";
-import { Target } from "./Target";
 import config from "./config.json";
+import { IPosition } from "./IGameObject";
+import { Target } from "./Target";
 
 export class Game {
   private canvas: HTMLCanvasElement;
-  private textLine1: HTMLElement;
-  private textLine2: HTMLElement;
   private ctx: CanvasRenderingContext2D;
   private targets: { [id: number]: Target } = {};
-  private mousePosition?: Position;
+  private mousePosition?: IPosition;
   private timer: number = 0;
   private spawnTimer: number = config.spawnDelayMax;
   private spawnDelay: number = config.spawnDelayMax;
@@ -27,9 +25,6 @@ export class Game {
     this.canvas.width = config.canvas.width;
     this.canvas.height = config.canvas.height;
     this.canvas.style.background = config.canvas.background;
-    this.textLine1 = document.querySelector(".info__text.line-1");
-    this.textLine2 = document.querySelector(".info__text.line-2");
-
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       throw new Error("Can't create canvas 2d context");
@@ -43,7 +38,7 @@ export class Game {
     });
   }
 
-  update(deltaTime: number) {
+  public update(deltaTime: number) {
     // update timers
     this.timer += deltaTime;
     this.spawnTimer += deltaTime;
@@ -58,26 +53,28 @@ export class Game {
 
     // update gameobjects
     for (const key in this.targets) {
-      const target = this.targets[key];
-      target.update(deltaTime);
+      if (this.targets.hasOwnProperty(key)) {
+        const target = this.targets[key];
+        target.update(deltaTime);
 
-      // Check colision
-      if (this.mousePosition) {
-        const isHit = this.ctx.isPointInPath(
-          target.path,
-          this.mousePosition.x,
-          this.mousePosition.y
-        );
+        // Check colision
+        if (this.mousePosition) {
+          const isHit = this.ctx.isPointInPath(
+            target.path,
+            this.mousePosition.x,
+            this.mousePosition.y
+          );
 
-        if (isHit) {
-          this.hit += 1;
+          if (isHit) {
+            this.hit += 1;
+            delete this.targets[key];
+          }
+        }
+
+        if (target.isDead) {
+          this.miss += 1;
           delete this.targets[key];
         }
-      }
-
-      if (target.isDead) {
-        this.miss += 1;
-        delete this.targets[key];
       }
     }
 
@@ -97,35 +94,35 @@ export class Game {
     this.mousePosition = undefined;
   }
 
-  render(deltaTime: number) {
+  public render(deltaTime: number) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     for (const key in this.targets) {
-      const target = this.targets[key];
-      target.render(this.ctx, deltaTime);
+      if (this.targets.hasOwnProperty(key)) {
+        const target = this.targets[key];
+        target.render(this.ctx, deltaTime);
+      }
+      this.ctx.lineWidth = 1;
+      this.ctx.strokeStyle = "white";
+      this.ctx.strokeText(
+        `Level: ${this.level}, Hit: ${this.hit}, Miss: ${this.miss}`,
+        20,
+        20
+      );
+      this.ctx.strokeText(
+        `TargetLiveTime: ${this.targetLiveTime}, TargetSpawnDelay: ${
+        this.spawnDelay
+        }`,
+        20,
+        40
+      );
     }
-    // this.ctx.lineWidth = 1;
-    // this.ctx.strokeStyle = "white";
-    // this.ctx.strokeText(
-    //   `Level: ${this.level}, Hit: ${this.hit}, Miss: ${this.miss}`,
-    //   20,
-    //   20
-    // );
-    this.textLine1.innerHTML = "Level: <i>"+this.level+"</i>, Hit: <i>"+this.hit+"</i>, Miss: <i>"+this.miss+"</i>";
-    this.textLine2.innerHTML = "TargetLiveTime: <i>"+this.targetLiveTime+"</i>, TargetSpawnDelay: <i>"+this.spawnDelay+"</i>";
-    // this.ctx.strokeText(
-    //   `TargetLiveTime: ${this.targetLiveTime}, TargetSpawnDelay: ${
-    //     this.spawnDelay
-    //   }`,
-    //   20,
-    //   40
-    // );
   }
 
-  targetsCount(): number {
+  public targetsCount(): number {
     return Object.keys(this.targets).length;
   }
 
-  getRandomPosition(): Position {
+  public getRandomPosition(): IPosition {
     const radius = config.target.radiusMax;
     const x = Math.floor(Math.random() * this.canvas.width);
     const y = Math.floor(Math.random() * this.canvas.height);
@@ -135,7 +132,7 @@ export class Game {
       y: this.restrictPosition(y, radius, this.canvas.height - radius)
     };
   }
-  restrictPosition(num: number, min: number, max: number): number {
+  public restrictPosition(num: number, min: number, max: number): number {
     num = Math.max(min, num);
     num = Math.min(max, num);
     return num;
