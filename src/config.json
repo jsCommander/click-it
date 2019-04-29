@@ -1,9 +1,4 @@
 {
-  "canvas": {
-    "width": 640,
-    "height": 480,
-    "background": ""
-  },
   "targetMax": 10,
   "spawnDelayMax": 1000,
   "spawnDelayMin": 500,
@@ -12,10 +7,11 @@
   "liveTimeMax": 5000,
   "liveTimeStep": 200,
   "levelTime": 5000,
+  "font":"serif",
   "target": {
     "strokeStyle": "orangered",
     "fillStyle": "white",
-    "lineWidth": 5,
+    "lineWidth": 3,
     "radiusMax": 30,
     "radiusMin": 5
   }

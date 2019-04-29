@@ -3,7 +3,6 @@ import { IPosition } from "./IGameObject";
 import { Target } from "./Target";
 
 export class Game {
-  private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private targets: { [id: number]: Target } = {};
   private mousePosition?: IPosition;
@@ -15,16 +14,15 @@ export class Game {
   private level: number = 1;
   private hit: number = 0;
   private miss: number = 0;
+  private font: string = `18px ${config.font}`
+  private topOffset: number = 80;
 
-  constructor(canvas: HTMLCanvasElement) {
-    if (!canvas) {
-      throw new Error("Please provide correct canvas element");
+  constructor(container: HTMLElement) {
+    if (!container) {
+      throw new Error("Please provide correct container element");
     }
 
-    this.canvas = canvas;
-    this.canvas.width = config.canvas.width;
-    this.canvas.height = config.canvas.height;
-    this.canvas.style.background = config.canvas.background;
+    const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       throw new Error("Can't create canvas 2d context");
@@ -36,6 +34,20 @@ export class Game {
         y: event.offsetY
       };
     });
+
+    this.resize(container);
+
+    window.addEventListener("resize", () => {
+      this.resize(container);
+    })
+
+    container.appendChild(canvas);
+  }
+
+  public resize(container: HTMLElement) {
+    const bound = container.getBoundingClientRect();
+    this.ctx.canvas.width = Math.round(bound.width);
+    this.ctx.canvas.height = Math.round(bound.height);
   }
 
   public update(deltaTime: number) {
@@ -95,24 +107,28 @@ export class Game {
   }
 
   public render(deltaTime: number) {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // clean canvas and fit it size to container
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
     for (const key in this.targets) {
       if (this.targets.hasOwnProperty(key)) {
         const target = this.targets[key];
         target.render(this.ctx, deltaTime);
       }
       this.ctx.lineWidth = 1;
-      this.ctx.strokeStyle = "white";
-      this.ctx.strokeText(
+      this.ctx.font = this.font;
+      this.ctx.fillStyle = "white";
+      this.ctx.textAlign="center"
+      this.ctx.fillText(
         `Level: ${this.level}, Hit: ${this.hit}, Miss: ${this.miss}`,
-        20,
+        Math.round(this.ctx.canvas.width / 2),
         20
       );
-      this.ctx.strokeText(
+
+      this.ctx.fillText(
         `TargetLiveTime: ${this.targetLiveTime}, TargetSpawnDelay: ${
         this.spawnDelay
         }`,
-        20,
+        Math.round(this.ctx.canvas.width / 2),
         40
       );
     }
@@ -124,12 +140,12 @@ export class Game {
 
   public getRandomPosition(): IPosition {
     const radius = config.target.radiusMax;
-    const x = Math.floor(Math.random() * this.canvas.width);
-    const y = Math.floor(Math.random() * this.canvas.height);
+    const x = Math.floor(Math.random() * this.ctx.canvas.width);
+    const y = Math.floor(Math.random() * this.ctx.canvas.height);
 
     return {
-      x: this.restrictPosition(x, radius, this.canvas.width - radius),
-      y: this.restrictPosition(y, radius, this.canvas.height - radius)
+      x: this.restrictPosition(x, radius, this.ctx.canvas.width - radius),
+      y: this.restrictPosition(y + this.topOffset, radius, this.ctx.canvas.height - radius)
     };
   }
   public restrictPosition(num: number, min: number, max: number): number {

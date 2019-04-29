@@ -1,18 +1,18 @@
 import { Game } from "./Game";
 
-const canvas = document.getElementById("game") as HTMLCanvasElement;
+const cont = document.getElementById("game") as HTMLElement;
 
-if (!canvas) {
-  throw new Error("Cant find canvas element");
-}
+const game = new Game(cont);
+let oldTimer = Date.now();
 
-const game = new Game(canvas);
-let timer = Date.now();
-
-setInterval(() => {
-  const now = Date.now();
-  const delta = now - timer;
-  timer = now;
+const gameCycle = ()=> {
+  const nowTimer = Date.now();
+  const delta = nowTimer - oldTimer;
+  oldTimer = nowTimer;
   game.update(delta);
   game.render(delta);
-}, 35);
+  requestAnimationFrame(gameCycle);
+}
+
+requestAnimationFrame(gameCycle);
+
