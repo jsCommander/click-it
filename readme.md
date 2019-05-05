@@ -1,6 +1,6 @@
 # Description
 
-Simple canvas game
+Simple canvas game. You can play it [here](https://jscommander.github.io/click-it/)
 
 ## Install
 
